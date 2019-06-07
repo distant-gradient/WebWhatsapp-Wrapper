@@ -7,7 +7,7 @@ WebWhatsAPI module
 import binascii
 import logging
 from json import dumps, loads
-
+import sys,time,random
 import os
 import shutil
 import tempfile
@@ -19,6 +19,8 @@ from base64 import b64decode, b64encode
 import magic
 from io import BytesIO
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -33,7 +35,6 @@ from .objects.number_status import NumberStatus
 from .wapi_js_wrapper import WapiJsWrapper
 
 __version__ = '2.0.3'
-
 
 class WhatsAPIDriverStatus(object):
     Unknown = 'Unknown'
@@ -85,7 +86,10 @@ class WhatsAPIDriver(object):
         'UnreadChatBanner': '.message-list',
         'ReconnectLink': '.action',
         'WhatsappQrIcon': 'span.icon:nth-child(2)',
-        'QRReloader': '._2EZ_m > span > div'
+        'QRReloader': '._2EZ_m > span > div',
+        'joinChatId': 'action-button',
+        'joinChatClass': 'button button--simple button--primary',
+
     }
 
     _CLASSES = {
@@ -101,12 +105,53 @@ class WhatsAPIDriver(object):
     # Do not alter this
     _profile = None
 
+    def save_chrome_profile(self):
+        self.logger.info("Saving profile from to %s" % (self._profile_path))
+        with open(os.path.join(self._profile_path, "localStorage.json"), "w") as fp:
+            fp.write(dumps(self.get_local_storage()))
+
+    def load_chrome_profile(self):
+        # self.is_logged_in() # required to prevent security exception
+        profile = os.path.join(self._profile_path, "localStorage.json")
+        if os.path.exists(profile):
+            with open(profile, "r") as fp:
+                data = loads(fp.read())
+                print(data)
+            self.set_local_storage(data)
+
+
     def get_local_storage(self):
         return self.driver.execute_script('return window.localStorage;')
 
     def set_local_storage(self, data):
         self.driver.execute_script(''.join(["window.localStorage.setItem('{}', '{}');".format(k, v)
                                             for k, v in data.items()]))
+    def join_group(self, group_link):
+        """
+        Join group
+        """
+        self.driver.get(self._URL)
+        wait = WebDriverWait(self.driver, 600)
+        print("processing", group_link)
+        
+        group_link = group_link.strip().strip("/")
+        group_id = group_link.split("/")[-1]
+        
+        self.driver.get(group_link)
+        '''
+        for i in range(1,2):
+            join_button = self.driver.find_element_by_css_selector(self._SELECTORS['joinChatId'])
+            print("clicked join button", group_link)
+            join_button.click()
+            sleep_time = random.randint(20,30)
+            time.sleep(sleep_time)  # allow time for page to load
+            print("sleeping for", sleep_time)
+            #group_info = self.driver.find_element_by_css_selector(self._SELECTORS['popup-body'])
+            join_group_button = self.driver.find_element_by_css_selector(self._SELECTORS['btn-plain.btn-default.popup-controls-item'])
+            print ("joined group", group_link)
+            join_group_button.click()
+        '''
+            
 
     def save_firefox_profile(self, remove_old=False):
         """Function to save the firefox profile to the permanant one"""
@@ -149,7 +194,7 @@ class WhatsAPIDriver(object):
         """Closes the selenium instance"""
         self.driver.close()
 
-    def __init__(self, client="firefox", username="API", proxy=None, command_executor=None, loadstyles=False,
+    def __init__(self, client="chrome", username="API", proxy=None, command_executor=None, loadstyles=False,
                  profile=None, headless=False, autoconnect=True, logger=None, extra_params=None, chrome_options=None, 
                  executable_path=None):
         """Initialises the webdriver"""
@@ -231,6 +276,27 @@ class WhatsAPIDriver(object):
                 desired_capabilities=capabilities,
                 **extra_params
             )
+        
+        elif client == 'chrome_remote':
+            self._profile = webdriver.ChromeOptions()
+            if self._profile_path is not None:
+                self._profile.add_argument("user-data-dir=%s" % self._profile_path)
+            if proxy is not None:
+                self._profile.add_argument('--proxy-server=%s' % proxy)
+            if headless:
+                self._profile.add_argument('headless')
+            if chrome_options is not None:
+                for option in chrome_options:
+                    self._profile.add_argument(option)
+            self.logger.info("Starting webdriver")
+            # self.driver = webdriver.Chrome(chrome_options=self._profile, **extra_params)
+            capabilities = DesiredCapabilities.CHROME.copy()
+            self.driver = webdriver.Remote(
+                command_executor=command_executor,
+                desired_capabilities=capabilities,
+                **extra_params
+            )
+
 
         else:
             self.logger.error("Invalid client: %s" % client)
@@ -243,11 +309,16 @@ class WhatsAPIDriver(object):
         if autoconnect:
             self.connect()
 
+        if self.client == "chrome_remote":
+            self.load_chrome_profile()
+
+
+
     def connect(self):
         self.driver.get(self._URL)
         
         profilePath = ""
-        if self.client == "chrome":
+        if self.client == "chrome" or self.client == "chrome_remote":
             profilePath = ""
         else:
             profilePath = self._profile.path
@@ -590,6 +661,7 @@ class WhatsAPIDriver(object):
         filename = os.path.split(path)[-1]
         return self.wapi_functions.sendImage(imgBase64, chatid, filename, caption)
     
+      
     
 
     def chat_send_seen(self, chat_id):
