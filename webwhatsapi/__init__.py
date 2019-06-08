@@ -325,7 +325,8 @@ class WhatsAPIDriver(object):
             self._profile = webdriver.ChromeOptions()
            
             if self._profile_path is not None:
-                self._profile.add_argument("user-data-dir=%s" % self._profile_path)
+                print("seetting profile path: %s"% self._profile_path)
+                self._profile.add_argument("user-data-dir=/app/chrome_cache/private")
             if proxy is not None:
                 self._profile.add_argument('--proxy-server=%s' % proxy)
             if headless:
@@ -339,6 +340,7 @@ class WhatsAPIDriver(object):
             self.driver = webdriver.Remote(
                 command_executor=command_executor,
                 desired_capabilities=capabilities,
+                options=self._profile,
                 **extra_params
             )
 
@@ -354,8 +356,8 @@ class WhatsAPIDriver(object):
         if autoconnect:
             self.connect()
 
-        if self.client == "chrome_remote":
-            self.load_chrome_profile()
+        # if self.client == "chrome_remote":
+        #     self.load_chrome_profile()
 
 
 
