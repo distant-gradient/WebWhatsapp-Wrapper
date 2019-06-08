@@ -22,6 +22,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
@@ -182,28 +183,27 @@ class WhatsAPIDriver(object):
         Case 1 - Already part of group -> return 'ALREADY_JOINED'
         Case 2 - Does not redirect from landing page. -> 'RETRY'
         Case 3 - Invite has been revoked. -> 'LINK_INACTIVE'
-        Case 4 - Joined group successfully -> 'JOINED'
-
-
+        Case 4 - Joined group successfully -> 'JOINED_REDIRECT'
         """
-        print("trying to join", group_link)
         
+        # go to chat link
+        print("trying to join", group_link)
         group_link = group_link.strip().strip("/")
         group_id = group_link.split("/")[-1]
-        
-        
         self.driver.get(group_link)
         
+        # wait for chat link to load completely
         time.sleep(10)
 
         try:
-            join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'JOIN CHAT')]")
+            join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
+            self.close_alert()
             #join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
             print ("RETRY")
             return 'RETRY'
         except NoSuchElementException:
             try:
-                link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'OK')]")
+                link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Ok')]")
                 link_inactive.click()
                 print('LINK_INACTIVE')
                 return 'LINK_INACTIVE'
@@ -214,10 +214,24 @@ class WhatsAPIDriver(object):
                     print('JOINED_REDIRECT')
                     return 'JOINED_REDIRECT'    
                 except:
-                    print("Could not find element")
-                    return
+                    print("None of enumberated cases.")
+                    return 'RETRY'
         
         return
+
+    def close_alert(self, timeout = 3):
+        """Waits for the xdg-open alert and then dismisses it."""
+       
+        try:
+            WebDriverWait(self.driver, timeout).until(EC.alert_is_present(), 'Timed out waiting for PA creation ' + 'confirmation popup to appear.')
+            alert = self.driver.switch_to.alert
+            alert.accept()
+            print("alert accepted")
+        except TimeoutException:
+            print("no alert")
+
+
+
 
 
     def close(self):
