@@ -121,37 +121,22 @@ class WhatsAPIDriver(object):
 
 
     def get_local_storage(self):
-        return self.driver.execute_script('return window.localStorage;')
+        # return self.driver.execute_script('return window.localStorage;')
+        return self.driver.execute_script( \
+            "var ls = window.localStorage, items = {}; " \
+            "for (var i = 0, k; i < ls.length; ++i) { " \
+            "  k = ls.key(i); " \
+            "  items[k] = ls.getItem(k); }" \
+            "return items; ")
 
     def set_local_storage(self, data):
-        self.driver.execute_script(''.join(["window.localStorage.setItem('{}', '{}');".format(k, v)
-                                            for k, v in data.items()]))
-    def join_group(self, group_link):
-        """
-        Join group
-        """
-        self.driver.get(self._URL)
-        wait = WebDriverWait(self.driver, 600)
-        print("processing", group_link)
+        import json
+        src = ''.join(["window.localStorage.setItem('{}', '{}');".format(k, v)
+                       for k, v in data.items()])
+        print(src.encode("utf-8"))
+        self.driver.execute_script(src)
         
-        group_link = group_link.strip().strip("/")
-        group_id = group_link.split("/")[-1]
-        
-        self.driver.get(group_link)
-        '''
-        for i in range(1,2):
-            join_button = self.driver.find_element_by_css_selector(self._SELECTORS['joinChatId'])
-            print("clicked join button", group_link)
-            join_button.click()
-            sleep_time = random.randint(20,30)
-            time.sleep(sleep_time)  # allow time for page to load
-            print("sleeping for", sleep_time)
-            #group_info = self.driver.find_element_by_css_selector(self._SELECTORS['popup-body'])
-            join_group_button = self.driver.find_element_by_css_selector(self._SELECTORS['btn-plain.btn-default.popup-controls-item'])
-            print ("joined group", group_link)
-            join_group_button.click()
-        '''
-            
+           
 
     def save_firefox_profile(self, remove_old=False):
         """Function to save the firefox profile to the permanant one"""
@@ -189,6 +174,51 @@ class WhatsAPIDriver(object):
         self._profile.set_preference("network.proxy.http_port", int(proxy_port))
         self._profile.set_preference("network.proxy.ssl", proxy_address)
         self._profile.set_preference("network.proxy.ssl_port", int(proxy_port))
+
+    def join_group(self, group_link):
+        """
+        Join group.
+
+        Case 1 - Already part of group -> return 'ALREADY_JOINED'
+        Case 2 - Does not redirect from landing page. -> 'RETRY'
+        Case 3 - Invite has been revoked. -> 'LINK_INACTIVE'
+        Case 4 - Joined group successfully -> 'JOINED'
+
+
+        """
+        print("trying to join", group_link)
+        
+        group_link = group_link.strip().strip("/")
+        group_id = group_link.split("/")[-1]
+        
+        
+        self.driver.get(group_link)
+        
+        time.sleep(10)
+
+        try:
+            join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'JOIN CHAT')]")
+            #join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
+            print ("RETRY")
+            return 'RETRY'
+        except NoSuchElementException:
+            try:
+                link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'OK')]")
+                link_inactive.click()
+                print('LINK_INACTIVE')
+                return 'LINK_INACTIVE'
+            except NoSuchElementException:
+                try:
+                    join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+                    join_group_button.click()
+                    print('JOINED_REDIRECT')
+                    return 'JOINED_REDIRECT'    
+                except:
+                    print("Could not find element")
+                    return
+        
+        return
+
 
     def close(self):
         """Closes the selenium instance"""
@@ -279,6 +309,7 @@ class WhatsAPIDriver(object):
         
         elif client == 'chrome_remote':
             self._profile = webdriver.ChromeOptions()
+           
             if self._profile_path is not None:
                 self._profile.add_argument("user-data-dir=%s" % self._profile_path)
             if proxy is not None:
