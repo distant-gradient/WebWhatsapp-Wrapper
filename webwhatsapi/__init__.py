@@ -323,8 +323,20 @@ class WhatsAPIDriver(object):
         
         elif client == 'chrome_remote':
             self._profile = webdriver.ChromeOptions()
-	    
-            	    
+        
+            # prefs = { 
+            #     'protocol_handler': { 
+            #         'excluded_schemes': { 
+            #            "whatsapp": False 
+            #         } 
+            #     } 
+            # }
+
+            #prefs = {"profile.default_content_setting_values.notifications" : 2}
+            # self._profile.add_experimental_option("prefs",prefs) 
+                   
+
+
             if self._profile_path is not None:
                 print("seetting profile path: %s"% self._profile_path)
                 self._profile.add_argument("user-data-dir=/app/chrome_cache/private")
@@ -338,6 +350,9 @@ class WhatsAPIDriver(object):
             self.logger.info("Starting webdriver")
             # self.driver = webdriver.Chrome(chrome_options=self._profile, **extra_params)
             capabilities = DesiredCapabilities.CHROME.copy()
+            
+            #import IPython
+            #IPython.embed()
             self.driver = webdriver.Remote(
                 command_executor=command_executor,
                 desired_capabilities=capabilities,
