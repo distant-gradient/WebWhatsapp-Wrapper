@@ -225,7 +225,7 @@ class WhatsAPIDriver(object):
         try:
             WebDriverWait(self.driver, timeout).until(EC.alert_is_present(), 'Timed out waiting for PA creation ' + 'confirmation popup to appear.')
             alert = self.driver.switch_to.alert
-            alert.accept()
+            alert.accept()  #dismiss
             print("alert accepted")
         except TimeoutException:
             print("no alert")
@@ -323,7 +323,8 @@ class WhatsAPIDriver(object):
         
         elif client == 'chrome_remote':
             self._profile = webdriver.ChromeOptions()
-           
+	    
+            	    
             if self._profile_path is not None:
                 self._profile.add_argument("user-data-dir=%s" % self._profile_path)
             if proxy is not None:
