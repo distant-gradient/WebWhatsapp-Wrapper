@@ -323,9 +323,11 @@ class WhatsAPIDriver(object):
         
         elif client == 'chrome_remote':
             self._profile = webdriver.ChromeOptions()
-            profile_name = os.environ["PROFILE_ID"] # yuck HACK!
-            profile_dir = os.path.join("/home/seluser/data/chrome_profiles", profile_name)
-            self._profile.add_argument("user-data-dir=%s" % profile_dir)
+            # profile_name = os.environ["PROFILE_ID"] # yuck HACK!
+            # profile_dir = os.path.join("/home/seluser/data/chrome_profiles", profile_name)
+            # self._profile.add_argument("user-data-dir=%s" % profile_dir)
+            # self._profile.add_argument("--disable-web-security")
+            # self._profile.add_argument("--allow-running-insecure-content")
         
             # prefs = { 
             #     'protocol_handler': { 
@@ -356,7 +358,7 @@ class WhatsAPIDriver(object):
             self.driver = webdriver.Remote(
                 command_executor=command_executor,
                 desired_capabilities=capabilities,
-                options=self._profile,
+            #    options=self._profile,
                 **extra_params
             )
 
