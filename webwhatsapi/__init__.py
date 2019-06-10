@@ -225,7 +225,7 @@ class WhatsAPIDriver(object):
         try:
             WebDriverWait(self.driver, timeout).until(EC.alert_is_present(), 'Timed out waiting for PA creation ' + 'confirmation popup to appear.')
             alert = self.driver.switch_to.alert
-            alert.accept()
+            alert.accept()  #dismiss
             print("alert accepted")
         except TimeoutException:
             print("no alert")
@@ -326,6 +326,20 @@ class WhatsAPIDriver(object):
             profile_name = os.environ["PROFILE_ID"] # yuck HACK!
             profile_dir = os.path.join("/home/seluser/data/chrome_profiles", profile_name)
             self._profile.add_argument("user-data-dir=%s" % profile_dir)
+        
+            # prefs = { 
+            #     'protocol_handler': { 
+            #         'excluded_schemes': { 
+            #            "whatsapp": False 
+            #         } 
+            #     } 
+            # }
+
+            #prefs = {"profile.default_content_setting_values.notifications" : 2}
+            # self._profile.add_experimental_option("prefs",prefs) 
+                   
+
+
             if proxy is not None:
                 self._profile.add_argument('--proxy-server=%s' % proxy)
             if headless:
@@ -336,6 +350,9 @@ class WhatsAPIDriver(object):
             self.logger.info("Starting webdriver")
             # self.driver = webdriver.Chrome(chrome_options=self._profile, **extra_params)
             capabilities = DesiredCapabilities.CHROME.copy()
+            
+            #import IPython
+            #IPython.embed()
             self.driver = webdriver.Remote(
                 command_executor=command_executor,
                 desired_capabilities=capabilities,
