@@ -324,6 +324,9 @@ class WhatsAPIDriver(object):
         
         elif client == 'chrome_remote':
             self._profile = webdriver.ChromeOptions()
+            profile_name = os.environ["PROFILE_ID"] # yuck HACK!
+            profile_dir = os.path.join("/home/seluser/data/chrome_profiles", profile_name)
+            self._profile.add_argument("user-data-dir=%s" % profile_dir)
         
             # prefs = { 
             #     'protocol_handler': { 
@@ -338,9 +341,6 @@ class WhatsAPIDriver(object):
                    
 
 
-            if self._profile_path is not None:
-                print("seetting profile path: %s"% self._profile_path)
-                self._profile.add_argument("user-data-dir=/app/chrome_cache/private")
             if proxy is not None:
                 self._profile.add_argument('--proxy-server=%s' % proxy)
             if headless:
