@@ -195,11 +195,11 @@ class WhatsAPIDriver(object):
         self.driver.get(group_link)
         
         # wait for chat link to load completely
-        time.sleep(10)
+        time.sleep(5)
 
         try:
-            join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
-            #join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
+            landing_page_join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
+            #landing_page_join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
             print ("RETRY")
             return 'RETRY'
         except NoSuchElementException:
@@ -328,16 +328,15 @@ class WhatsAPIDriver(object):
             profile_dir = os.path.join("/home/seluser/data/chrome_profiles", profile_name)
             self._profile.add_argument("user-data-dir=%s" % profile_dir)
         
-            # prefs = { 
-            #     'protocol_handler': { 
-            #         'excluded_schemes': { 
-            #            "whatsapp": False 
-            #         } 
-            #     } 
-            # }
+            #prefs = { 
+            #    'protocol_handler': { 
+            #        'excluded_schemes': { 
+            #           "whatsapp": True 
+            #        } 
+            #    } 
+            #}
 
-            #prefs = {"profile.default_content_setting_values.notifications" : 2}
-            # self._profile.add_experimental_option("prefs",prefs) 
+            #self._profile.add_experimental_option("prefs",prefs) 
                    
 
 
