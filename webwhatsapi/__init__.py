@@ -195,28 +195,43 @@ class WhatsAPIDriver(object):
         self.driver.get(group_link)
         
         # wait for chat link to load completely
-        time.sleep(5)
-
-        try:
-            landing_page_join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
-            #landing_page_join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
-            print ("RETRY")
-            return 'RETRY'
-        except NoSuchElementException:
-            try:
-                link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Ok')]")
-                link_inactive.click()
-                print('LINK_INACTIVE')
-                return 'LINK_INACTIVE'
-            except NoSuchElementException:
-                try:
-                    join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
-                    join_group_button.click()
-                    print('JOINED_REDIRECT')
-                    return 'JOINED_REDIRECT'    
-                except:
-                    print("None of enumberated cases.")
-                    return 'RETRY'
+        # while True:
+        #     print("attempt")
+        #     try:
+        #         print("find button")
+        #         landing_page_join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
+        #         print("find button done")
+        #         #landing_page_join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
+        #         print ("RETRY")
+        #         # return 'RETRY'
+        #     except NoSuchElementException:
+        #         try:
+        #             print("find button")
+        #             link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Ok')]")
+        #             link_inactive.click()
+        #             print('LINK_INACTIVE')
+        #             return 'LINK_INACTIVE'
+        #         except NoSuchElementException:
+        #             try:
+        #                 join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+        #                 join_group_button.click()
+        #                 print('JOINED_REDIRECT')
+        #                 return 'JOINED_REDIRECT'    
+        #             except:
+        #                 print("None of enumberated cases.")
+        #                 # return 'RETRY'
+        while True:
+            print("attempt")
+            # try:
+            #     join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+            #     print('clicking')
+            #     join_group_button.click()
+            #     print('JOINED_REDIRECT')
+            #     return 'JOINED_REDIRECT'    
+            # except:
+            #     print("None of enumberated cases.")
+            #     # return 'RETRY'
+            time.sleep(10)
         
         return
 
