@@ -222,15 +222,15 @@ class WhatsAPIDriver(object):
         #                 # return 'RETRY'
         while True:
             print("attempt")
-            # try:
-            #     join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
-            #     print('clicking')
-            #     join_group_button.click()
-            #     print('JOINED_REDIRECT')
-            #     return 'JOINED_REDIRECT'    
-            # except:
-            #     print("None of enumberated cases.")
-            #     # return 'RETRY'
+            try:
+                join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+                print('clicking')
+                join_group_button.click()
+                print('JOINED_REDIRECT')
+                return 'JOINED_REDIRECT'    
+            except:
+                print("None of enumberated cases.")
+                # return 'RETRY'
             time.sleep(10)
         
         return
