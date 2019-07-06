@@ -180,10 +180,12 @@ class WhatsAPIDriver(object):
         """
         Join group.
 
-        Case 1 - Already part of group -> return 'ALREADY_JOINED'
-        Case 2 - Does not redirect from landing page. -> 'RETRY'
-        Case 3 - Invite has been revoked. -> 'LINK_INACTIVE'
-        Case 4 - Joined group successfully -> 'JOINED_REDIRECT'
+        Case 1 - Stays on group landing page. -> 'RETRY'
+        Case 2 - Popup - Inactive Invite Link -> 'LINK_INACTIVE'
+        Case 3 - Popup - Group is full -> 'GROUP_FULL'
+        Case 4 - Popup - Joined group successfully -> 'JOINED_REDIRECT'
+        Case 5 - Already part of group -> return 'ALREADY_JOINED'
+        Else - 'RETRY'
         """
         
         # go to chat link
@@ -193,29 +195,43 @@ class WhatsAPIDriver(object):
         self.driver.get(group_link)
         
         # wait for chat link to load completely
-        time.sleep(10)
-
-        try:
-            join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
-            self.close_alert()
-            #join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
-            print ("RETRY")
-            return 'RETRY'
-        except NoSuchElementException:
-            try:
-                link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Ok')]")
-                link_inactive.click()
-                print('LINK_INACTIVE')
-                return 'LINK_INACTIVE'
-            except NoSuchElementException:
-                try:
-                    join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
-                    join_group_button.click()
-                    print('JOINED_REDIRECT')
-                    return 'JOINED_REDIRECT'    
-                except:
-                    print("None of enumberated cases.")
-                    return 'RETRY'
+        # while True:
+        #     print("attempt")
+        #     try:
+        #         print("find button")
+        #         landing_page_join_chat_button =  self.driver.find_element_by_xpath("//a[contains(@class, 'button button--simple button--primary') and contains(.,'Join chat')]")
+        #         print("find button done")
+        #         #landing_page_join_chat_button.click() #maybe do this once the xdg-open alert is disabled/handled
+        #         print ("RETRY")
+        #         # return 'RETRY'
+        #     except NoSuchElementException:
+        #         try:
+        #             print("find button")
+        #             link_inactive = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Ok')]")
+        #             link_inactive.click()
+        #             print('LINK_INACTIVE')
+        #             return 'LINK_INACTIVE'
+        #         except NoSuchElementException:
+        #             try:
+        #                 join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+        #                 join_group_button.click()
+        #                 print('JOINED_REDIRECT')
+        #                 return 'JOINED_REDIRECT'    
+        #             except:
+        #                 print("None of enumberated cases.")
+        #                 # return 'RETRY'
+        while True:
+            print("attempt")
+            # try:
+            #     join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+            #     print('clicking')
+            #     join_group_button.click()
+            #     print('JOINED_REDIRECT')
+            #     return 'JOINED_REDIRECT'    
+            # except:
+            #     print("None of enumberated cases.")
+            #     # return 'RETRY'
+            time.sleep(10)
         
         return
 
@@ -329,16 +345,15 @@ class WhatsAPIDriver(object):
             self._profile.add_argument("--disable-web-security")
             self._profile.add_argument("--allow-running-insecure-content")
         
-            # prefs = { 
-            #     'protocol_handler': { 
-            #         'excluded_schemes': { 
-            #            "whatsapp": False 
-            #         } 
-            #     } 
-            # }
+            #prefs = { 
+            #    'protocol_handler': { 
+            #        'excluded_schemes': { 
+            #           "whatsapp": True 
+            #        } 
+            #    } 
+            #}
 
-            #prefs = {"profile.default_content_setting_values.notifications" : 2}
-            # self._profile.add_experimental_option("prefs",prefs) 
+            #self._profile.add_experimental_option("prefs",prefs) 
                    
 
 
