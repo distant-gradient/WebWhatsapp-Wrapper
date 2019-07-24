@@ -258,7 +258,16 @@ window.WAPI.getAllChatsWithNewMsg = function (done) {
  * @returns {Array|*} List of chat id's
  */
 window.WAPI.getAllChatIds = function (done) {
-    const chatIds = window.Store.Chat.map((chat) => chat.id._serialized || chat.id);
+    //const chatIds = window.Store.Chat.map((chat) => chat.id._serialized || chat.id);
+    //ANON
+    const chatIds = window.Store.Chat.filter((chat) => chat.canSend).map((chat) => chat.id._serialized || chat.id);
+
+    if (done !== undefined) done(chatIds);
+    return chatIds;
+};
+
+window.WAPI.getAllSendableChatNames = function (done) {
+    const chatIds = window.Store.Chat.filter((chat) => chat.canSend).map((chat) => chat.name)
 
     if (done !== undefined) done(chatIds);
     return chatIds;
