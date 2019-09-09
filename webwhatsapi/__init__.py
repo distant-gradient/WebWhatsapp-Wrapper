@@ -130,42 +130,50 @@ class WhatsAPIDriver(object):
             "  items[k] = ls.getItem(k); }" \
             "return items; ")
 
-    def set_local_storage(self, data):
+    def set_local_storage(self, data, run_execute=True):
         import json
-        src = ''.join(["window.localStorage.setItem('{}', '{}');".format(k, v)
+        src = ''.join(["window.localStorage.setItem('{}', '{}');".format(k, v.replace("\n", "\\n"))
                        for k, v in data.items()])
-        print(src.encode("utf-8"))
-        self.driver.execute_script(src)
+        print(src)
+        # print(src.encode("utf-8"))
+        if run_execute:
+            self.driver.execute_script(src)
         
            
 
-    def save_firefox_profile(self, remove_old=False):
+    def save_firefox_profile(self):
         """Function to save the firefox profile to the permanant one"""
         self.logger.info("Saving profile from %s to %s" % (self._profile.path, self._profile_path))
 
-        if remove_old:
-            if os.path.exists(self._profile_path):
-                try:
-                    shutil.rmtree(self._profile_path)
-                except OSError:
-                    pass
+        # if remove_old:
+        #     if os.path.exists(self._profile_path):
+        #         try:
+        #             shutil.rmtree(self._profile_path)
+        #         except OSError:
+        #             pass
 
-            shutil.copytree(os.path.join(self._profile.path), self._profile_path,
-                            ignore=shutil.ignore_patterns("parent.lock", "lock", ".parentlock"))
-        else:
-            for item in os.listdir(self._profile.path):
-                if item in ["parent.lock", "lock", ".parentlock"]:
-                    continue
-                s = os.path.join(self._profile.path, item)
-                d = os.path.join(self._profile_path, item)
-                if os.path.isdir(s):
-                    shutil.copytree(s, d,
-                                    ignore=shutil.ignore_patterns("parent.lock", "lock", ".parentlock"))
-                else:
-                    shutil.copy2(s, d)
+        #     shutil.copytree(os.path.join(self._profile.path), self._profile_path,
+        #                     ignore=shutil.ignore_patterns("parent.lock", "lock", ".parentlock"))
+        # else:
+        #     for item in os.listdir(self._profile.path):
+        #         if item in ["parent.lock", "lock", ".parentlock"]:
+        #             continue
+        #         s = os.path.join(self._profile.path, item)
+        #         d = os.path.join(self._profile_path, item)
+        #         if os.path.isdir(s):
+        #             shutil.copytree(s, d,
+        #                             ignore=shutil.ignore_patterns("parent.lock", "lock", ".parentlock"))
+        #         else:
+        #             shutil.copy2(s, d)
 
-        with open(os.path.join(self._profile_path, self._LOCAL_STORAGE_FILE), 'w') as f:
-            f.write(dumps(self.get_local_storage()))
+        path = os.path.join(self._profile_path, self._LOCAL_STORAGE_FILE)
+        # if os.path.exists(path):
+        #    return
+        
+        content = dumps(self.get_local_storage())
+        self.set_local_storage(loads(content), run_execute=False)
+        with open(path, 'w') as f:
+            f.write(content)
 
     def set_proxy(self, proxy):
         self.logger.info("Setting proxy to %s" % proxy)
