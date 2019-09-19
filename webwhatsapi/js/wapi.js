@@ -267,7 +267,7 @@ window.WAPI.getAllChatIds = function (done) {
 };
 
 window.WAPI.getAllSendableChats = function (done) {
-    const chatIds = window.Store.Chat.filter((chat) => (chat.canSend && chat.name != undefined) ).map((chat) => ({"name": chat.name, "id": chat.id._serialized}))
+    const chatIds = window.Store.Chat.filter((chat) => (chat.canSend && chat.name != undefined)).map((chat) => ({"name": chat.name, "id": chat.id._serialized}))
 
     if (done !== undefined) done(chatIds);
     return chatIds;

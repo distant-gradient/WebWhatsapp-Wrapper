@@ -202,6 +202,7 @@ class WhatsAPIDriver(object):
         group_id = group_link.split("/")[-1]
         self.driver.get(group_link)
         
+        
         # wait for chat link to load completely
         # while True:
         #     print("attempt")
@@ -229,8 +230,14 @@ class WhatsAPIDriver(object):
         #                 print("None of enumberated cases.")
         #                 # return 'RETRY'
         try:
-            join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
+            join_chat_button = self.driver.find_element_by_xpath("//a[contains(.,'Join chat')]")
             print('clicking')
+            join_chat_button.click()
+            # continue on whatsapp web click
+            continue_web = self.driver.find_element_by_xpath("//a[contains(@class, 'action__link')]")
+            print('clicking2')
+            continue_web.click()
+            join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
             join_group_button.click()
             print('JOINED_REDIRECT')
             return True 
