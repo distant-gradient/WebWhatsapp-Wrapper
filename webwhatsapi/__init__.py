@@ -134,8 +134,8 @@ class WhatsAPIDriver(object):
         import json
         src = ''.join(["window.localStorage.setItem('{}', '{}');".format(k, v.replace("\n", "\\n"))
                        for k, v in data.items()])
-        print(src)
-        # print(src.encode("utf-8"))
+        # print(src)
+        print(src.encode("utf-8"))
         if run_execute:
             self.driver.execute_script(src)
         
@@ -230,6 +230,9 @@ class WhatsAPIDriver(object):
         #                 print("None of enumberated cases.")
         #                 # return 'RETRY'
         try:
+            group_name = self.driver.find_element_by_xpath("//h2[contains(@class, 'block__title')]").text
+            if group_name == "":
+                return None 
             join_chat_button = self.driver.find_element_by_xpath("//a[contains(.,'Join chat')]")
             print('clicking')
             join_chat_button.click()
@@ -240,12 +243,12 @@ class WhatsAPIDriver(object):
             join_group_button = self.driver.find_element_by_xpath("//div[contains(@class, '_2eK7W _3PQ7V') and contains(.,'Join group')]")
             join_group_button.click()
             print('JOINED_REDIRECT')
-            return True 
+            return group_name
         except:
             print("None of enumberated cases.")
             # return 'RETRY'
         
-        return False
+        return None
 
     def close_alert(self, timeout = 3):
         """Waits for the xdg-open alert and then dismisses it."""

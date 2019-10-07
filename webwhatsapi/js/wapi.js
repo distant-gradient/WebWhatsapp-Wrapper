@@ -183,8 +183,9 @@ window.WAPI.createGroup = function (name, contactsId) {
     if (!Array.isArray(contactsId)) {
         contactsId = [contactsId];
     }
+    var contacts = contactsId.map((c) => ({"id": c}));
 
-    return window.Store.Wap.createGroup(name, contactsId);
+    return window.Store.Wap.createGroup(name, undefined, undefined, contacts);
 };
 
 window.WAPI.leaveGroup = function (groupId) {
@@ -565,7 +566,7 @@ window.WAPI._getGroupParticipants = async function (id) {
  */
 window.WAPI.getGroupParticipantIDs = async function (id, done) {
     const output = (await WAPI._getGroupParticipants(id))
-        .map((participant) => participant.id);
+        .map((participant) => ({"id": participant.id, "admin": participant.isAdmin}));
 
     if (done !== undefined) done(output);
     return output;
@@ -1363,6 +1364,18 @@ window.WAPI.removeParticipantGroup = function (idGroup, idParticipant, done) {
 
 }
 
+window.WAPI.acceptGroupInvite = function(inviteCode, done) {
+  window.Store.WapQuery.acceptGroupInvite(inviteCode).then((result) => {
+        done(result.gid);
+  });
+}
+
+
+window.WAPI.getGroupInviteLink = function (idGroup, done) {
+    window.Store.WapQuery.groupInviteCode(idGroup).then((result) => {
+        done(result.code);
+     });
+}
 
 /**
  * Promote Participant to Admin in Group
